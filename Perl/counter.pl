@@ -31,5 +31,5 @@ my $output = join(', ',@values);
 
 # In compliance with Part One's requirements we will explicity write to
 # standard output
-print( <STDOUT> , "You entered: $output\n");
+print( <STDOUT> , "You entered: $output\n" );
 
