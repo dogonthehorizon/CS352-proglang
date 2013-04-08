@@ -50,25 +50,17 @@ my @files = sort readdir DIR;
 # We subtract one here so that we are not accidentally counting
 # the current (.) and previous (..) directories.
 my $dir_size = $#files-1;
-my $largest_file_name = '';
-my $largest_file_size = 0;
 
 foreach (@files) {
     # Ignore the current (.) and previous (..) directories.
     next if $_ =~ m/^\.\.?$/;
 
-    print $OH "$_\n";
-
-    # Get the largest file size
-    my $temp_size = 0;
-    $temp_size = -s $_ unless -d $_;
-    if ( $temp_size > $largest_file_size ) {
-        $largest_file_name = $_;
-        $largest_file_size = $temp_size;
-    }
     # Print the sorted list.
+    print $OH "$_\n";
 }
 
+# See function definition for find_largest_file
+my ($largest_file_name, $largest_file_size) = &find_largest_file(@files);
 
 print $OH "\n";
 print $OH "Number of files: $dir_size\n";
@@ -79,4 +71,34 @@ printf $OH "Largest file: %s %.2fK\n", $largest_file_name, $largest_file_size/10
 # Close our open handles.
 close $OH;
 closedir DIR;
+
+###############
+# SUBROUTINES #
+###############
+
+##
+# find_largest_file
+#
+# Finds the largest file in the given file list and returns its name and size.
+#
+sub find_largest_file ($) {
+    my $high_name = 'asdf';
+    my $high_size = 0;
+
+    foreach (@_){
+        # Once again ignore current and previous directories.
+        next if $_ =~ /^\.\.?$/;
+
+        # Get the filesize of our current file/directory.
+        my $temp = -s "$input/$_";
+
+        # Find our higheste value.
+        if($temp > $high_size) {
+            $high_name = $_;
+            $high_size = $temp;
+        }
+    }
+
+    return $high_name, $high_size;
+}
 
