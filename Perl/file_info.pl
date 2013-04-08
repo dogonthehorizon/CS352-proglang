@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+
 ###############################
 #                             #
 # FILE      : file_info.pl    #
@@ -12,8 +13,6 @@ use strict;
 # Make sure we don't have more than 2 command line arguments.
 die "Incorrect number of files arguments.\n" unless $#ARGV < 2;
 
-if ($#ARGV > 2){ die "Incorrect number of file arguments.\n"; }
-
 # Get command line arguments
 my $input = shift;
 my $output = shift;
@@ -23,8 +22,8 @@ my $output = shift;
 $input = '.' unless (! $input eq '');
 
 # Set the value of $output to something completely random unless $output already
-# contains something.
-$output = "asdfasdfasdfasdf" unless  (! $output eq '');
+# contains something. This gets rid of the uninitiliazed warning.
+$output = "asdflkjhasdflkjh" unless  (! $output eq '');
 
 # An interesting aside for the above two lines:
 # For whatever reason using the string comparison `ne` will yield warnings when
@@ -48,33 +47,34 @@ if ( -e $output ) {
 opendir DIR, $input or die "Could not open $input for browsing";
 my @files = sort readdir DIR;
 
-my $dir_size = $#files+1;
+# We subtract one here so that we are not accidentally counting
+# the current (.) and previous (..) directories.
+my $dir_size = $#files-1;
 my $largest_file_name = '';
 my $largest_file_size = 0;
 
 foreach (@files) {
-    # Ignore any file that begins with .
-    # This includes the current (.) and previous (..) directories.
-    next if $_ =~ m/^\./;
+    # Ignore the current (.) and previous (..) directories.
+    next if $_ =~ m/^\.\.?$/;
+
+    print $OH "$_\n";
+
     # Get the largest file size
-    my $temp_size = -s $_;
-    #print "Current size is $temp_size and largest size is $largest_file_size\n";
+    my $temp_size = 0;
+    $temp_size = -s $_ unless -d $_;
     if ( $temp_size > $largest_file_size ) {
         $largest_file_name = $_;
         $largest_file_size = $temp_size;
     }
     # Print the sorted list.
-    print $OH "$_\n";
 }
 
-# -s returns the file size in bytes, so lets convert it to a more
-# human readable number in kilobytes.
-$largest_file_size = $largest_file_size / 1000;
 
 print $OH "\n";
 print $OH "Number of files: $dir_size\n";
-# Let's truncate our human readable file size so the number isn't so long.
-printf $OH "Largest file: %s %.2fK\n", $largest_file_name, $largest_file_size;
+# -s returns the file size in bytes, so lets convert it to a more
+# human readable number in kilobytes.
+printf $OH "Largest file: %s %.2fK\n", $largest_file_name, $largest_file_size/1000;
 
 # Close our open handles.
 close $OH;
