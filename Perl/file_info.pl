@@ -1,9 +1,18 @@
 #!/usr/bin/perl -w
+###############################
+#                             #
+# FILE      : file_info.pl    #
+# AUTHOR    : Fernando Freire #
+# DATE      : 04/08/2013      #
+#                             #
+###############################
 
 use strict;
 
 # Make sure we don't have more than 2 command line arguments.
 die "Incorrect number of files arguments.\n" unless $#ARGV < 2;
+
+if ($#ARGV > 2){ die "Incorrect number of file arguments.\n"; }
 
 # Get command line arguments
 my $input = shift;
@@ -26,13 +35,13 @@ $output = "asdfasdfasdfasdf" unless  (! $output eq '');
 die "Error opening $input, no such directory.\n" unless -e $input;
 
 # If the file exists, lets open it for appending and assign it to the
-# $output filehandle. Otherwise, $outhandle should reference STDOUT to avoid
+# $OH filehandle. Otherwise, $OH should reference STDOUT to avoid
 # code duplication.
-my $outhandle;
+my $OH;
 if ( -e $output ) {
-    open($outhandle, ">>", $output) or die "Could not open $output for writing";
+    open($OH, ">>", $output) or die "Could not open $output for writing";
 } else {
-    $outhandle = *STDOUT;
+    $OH = *STDOUT;
 }
 
 # Open our input directory so that we can read all of its contents.
@@ -48,24 +57,26 @@ foreach (@files) {
     # This includes the current (.) and previous (..) directories.
     next if $_ =~ m/^\./;
     # Get the largest file size
-    if ( -s $_ > $largest_file_size ) {
+    my $temp_size = -s $_;
+    #print "Current size is $temp_size and largest size is $largest_file_size\n";
+    if ( $temp_size > $largest_file_size ) {
         $largest_file_name = $_;
-        $largest_file_size = -s $_;
+        $largest_file_size = $temp_size;
     }
     # Print the sorted list.
-    print $outhandle "$_\n";
+    print $OH "$_\n";
 }
 
 # -s returns the file size in bytes, so lets convert it to a more
 # human readable number in kilobytes.
 $largest_file_size = $largest_file_size / 1000;
 
-print $outhandle "\n";
-print $outhandle "Number of files: $dir_size\n";
+print $OH "\n";
+print $OH "Number of files: $dir_size\n";
 # Let's truncate our human readable file size so the number isn't so long.
-printf $outhandle "Largest file: %s %.2fK\n", $largest_file_name, $largest_file_size;
+printf $OH "Largest file: %s %.2fK\n", $largest_file_name, $largest_file_size;
 
 # Close our open handles.
-close $outhandle;
+close $OH;
 closedir DIR;
 
